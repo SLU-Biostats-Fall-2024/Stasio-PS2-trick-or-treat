@@ -1,0 +1,149 @@
+---
+title: "Stasio-PS2.qmd"
+format: html
+editor: visual
+---
+The purpose of this file is to practice familiarizing myself with the workflow of reproducible scientific research using GitHub and R. Additionally, it serves as an opportunity to practice basic Biostatistics skills such as constructing plots and repairing data frames. 
+
+
+Set up
+```{r}
+#Clear the environment
+rm(list = ls())
+#Load in packages
+library(tidyverse)
+library(here)
+```
+
+Load in and examine the dataset
+```{r}
+#Load in the dataset
+Halloween <- read.csv(here("Data", "Halloween_data_PS2.csv"))
+#Examine the dataset using 2 different functions
+glimpse(Halloween)
+str(Halloween)
+```
+
+Assign appropriate data types
+```{r}
+#Convert costume column to factor data 
+Halloween$costume <- as.factor(Halloween$costume)
+#Convert sugar_high column to factor data
+Halloween$sugar_high <- as.factor(Halloween$sugar_high)
+
+#Change Costume_type to be lowercase like the other column names
+names(Halloween)[names(Halloween) == "Costume_type"] <- "costume_type"
+#Convert costume_type to factor data
+Halloween$costume_type <- as.factor(Halloween$costume_type)
+```
+
+Fix any errors in the costume column
+```{r}
+#Determine if any rows in the costume column need repair
+levels(Halloween$costume)
+#Find the rows that have any version of "princess" 
+princess_fix <- which(Halloween$costume %in% c("princess", "Princess"))
+#Apply the repair
+Halloween$costume[princess_fix] <- "princess"
+#Find the rows that have any version of "Unicorn"
+unicorn_fix <- which(Halloween$costume %in% c("unicorn", "Unicorn"))
+#Apply the repair
+Halloween$costume[unicorn_fix] <- "unicorn"
+#Find the rows that have any version of "witch"
+witch_fix <- which(Halloween$costume %in% c("witch", "Witch", "witch "))
+#Apply the repair
+Halloween$costume[witch_fix] <- "witch"
+#Find the rows that have any version of "zombie"
+zombie_fix <- which(Halloween$costume %in% c("Zombie", "zombie"))
+#Apply the repair
+Halloween$costume[zombie_fix] <- "zombie"
+```
+
+Fix any errors in the costume_type column 
+```{r}
+#Determine if any rows in the costume_type column need repair
+levels(Halloween$costume_type)
+#Find the rows that have any version of "Not Scary"
+Not_scary_fix <- which(Halloween$costume_type %in% c("not scary", "Not scary", "notscary"))
+#Apply the repair
+Halloween$costume_type[Not_scary_fix] <- "Not scary"
+#Find the rows that have any version of "Scary"
+Scary_fix <- which(Halloween$costume_type %in% c("scaly", "scary", "Scary", "scary "))
+#Apply the repair 
+Halloween$costume_type[Scary_fix] <- "Scary"
+```
+
+Fix any errors in the sugar_high column
+```{r}
+#Determine if any rows in the sugar_high column need repair
+levels(Halloween$sugar_high)
+#Find the rows that have any version of "No"
+No_fix <- which(Halloween$sugar_high %in% c("no", "No", "NO"))
+#Apply the repair
+Halloween$sugar_high[No_fix] <- "No"
+#Find the rows that have any version of "Yes"
+Yes_fix <- which(Halloween$sugar_high %in% c("yes", "Yes"))
+#Apply the repair
+Halloween$sugar_high[Yes_fix] <- "Yes"
+```
+
+Check to ensure all fixes were properly applied
+```{r}
+#Relist the levels of factor data in altered columns
+Halloween$costume <- factor(Halloween$costume)
+Halloween$costume_type <- factor(Halloween$costume_type)
+Halloween$sugar_high <- factor(Halloween$sugar_high)
+#Check the levels
+levels(Halloween$costume)
+levels(Halloween$costume_type)
+levels(Halloween$sugar_high)
+```
+
+Construct a scatterplot of min_temp_trick_treat_C vs. age by costume_type
+```{r}
+#Plot the scatterplot
+ggplot(Halloween, aes(x = age, y = min_temp_trick_treat_C, shape = costume_type, color = costume_type)) +
+  geom_point(size=5,alpha=0.5) +
+  xlab("Age of trick-or-treater (years)") +
+  ylab("Minimum temperature while out (C)") +
+  scale_color_manual(values = c("Not scary" = 'red',
+                                "Scary" = 'green',
+                                "Uncertain" = 'blue')) +
+  theme_bw()
+```
+
+Isolate data from children who are 10 years or older and have consumed 100 or more grams of Halloween candy and use it to construct a histogram that shows the counts of the number of kids who ate a certain number of candy pieces
+```{r}
+#Isolate the data from children who are 10 years or older and have consumed 100 or more grams of Halloween candy 
+age_candy_filter <- filter(Halloween, age > 9 & g_candy_consumed > 99)
+#Plot the histogram
+ggplot(age_candy_filter, aes(x=candy_pieces)) +
+  geom_histogram() +
+  xlab("Number of candy pieces eaten") +
+  ylab("Count") 
+```
+
+Calculate summary statistics that show the mean and standard deviation for age and grams of candy consumed depending on whether or not a sugar high was experienced
+```{r}
+#Calculate summary statistics
+Halloween |>
+  group_by(sugar_high) |>
+    summarize(
+      mean_age = mean(age),
+      sd_age = sd(age),
+      mean_g_candy = mean(g_candy_consumed),
+      sd_g_candy = sd(g_candy_consumed)
+    ) |> View()
+```
+
+Construct a box-and-whisker plot showing the amount of candy candy consumed by children wearing different types of Halloween costumes depending on whether or not they experienced a sugar high
+```{r}
+#Plot the box-and-whisker plot
+ggplot(Halloween, aes(x = costume_type, y = g_candy_consumed)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(size = 3, color = 'orange', alpha = 0.75) +
+  xlab("Costume type") +
+  ylab("Amount of candy consumed (g)") +
+  facet_wrap(~ sugar_high) +
+  theme_bw()
+```
