@@ -1,0 +1,17 @@
+---
+title: "PS2-feedback"
+format: html
+editor: visual
+---
+
+## PS2 Feedback
+I love that you included a purpose at the top of your .qmd file. Now work on also adding commentary about code that you execute. Fore example, you did a good job examining the dataset, but didn't make any comments about what you learned from that examination, and, for instance, how what you learned will inform the rest of your work.
+
+Also, think about some of your decisions. There is no reason NOT to change `Costume_type` to `costume_type` but you don't need to - not doing so will have no effect. Also, why did you decide to make `costume` into a factor variable? A hint that it isn't necessary would be the fact that after cleaning, you still have 41 factor levels in a dataset with only 49 rows.
+
+Nice job at lines 104 - 106 checking that your fixes worked!
+
+You neglected to error-check any of the numeric variables.
+
+Otherwise, looks pretty good! Also see .pdf for feedback.
+
